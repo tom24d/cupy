@@ -51,6 +51,7 @@ Basics
 
    poly1d
    polyval
+   poly
    roots
 
 
