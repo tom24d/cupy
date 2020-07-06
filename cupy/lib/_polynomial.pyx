@@ -8,6 +8,16 @@ import cupy
 from cupy.lib import _routines_poly
 
 
+def _fft_poly(seq):
+    n = seq.shape[0]
+    if n == 1:
+        return seq[0]
+    if n == 2:
+        return cupy.math.misc._fft_convolve(seq[0], seq[1], 'full')
+    return cupy.math.misc._fft_convolve(_fft_poly(seq[:n/2]),
+                                        _fft_poly(seq[n/2:]), 'full')
+
+
 def poly(seq):
     """Computes the coefficients of a polynomial with the given roots sequence.
 
@@ -42,11 +52,7 @@ def poly(seq):
     if seq.size == 0:
         return 1.0
 
-    out = cupy.ones((1,), seq.dtype)
-    seq = cupy.column_stack((cupy.ones(seq.size, seq.dtype), -seq))
-    for zero in seq:
-        out = cupy.convolve(out, zero, 'full')
-    return out
+    return _fft_poly(cupy.column_stack((cupy.ones(seq.size, seq.dtype), -seq)))
 
 
 cdef class poly1d:
