@@ -536,6 +536,7 @@ from cupy.lib._routines_poly import polysub  # NOQA
 from cupy.lib._routines_poly import polymul  # NOQA
 from cupy.lib._routines_poly import polyfit  # NOQA
 from cupy.lib._routines_poly import polyval  # NOQA
+from cupy.lib._polynomial import poly  # NOQA
 from cupy.lib._routines_poly import roots  # NOQA
 
 # Borrowed from NumPy
