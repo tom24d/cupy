@@ -8,14 +8,14 @@ import cupy
 from cupy.lib import _routines_poly
 
 
-def _fft_poly(seq):
+def _fft_poly(seq, convolve_func):
     n = seq.shape[0]
     if n == 1:
         return seq[0]
     if n == 2:
-        return cupy.math.misc._fft_convolve(seq[0], seq[1], 'full')
-    return cupy.math.misc._fft_convolve(_fft_poly(seq[:n/2]),
-                                        _fft_poly(seq[n/2:]), 'full')
+        return convolve_func(seq[0], seq[1], 'full')
+    return convolve_func(_fft_poly(seq[:n/2]),
+                        _fft_poly(seq[n/2:]), 'full')
 
 
 def poly(seq):
@@ -52,7 +52,9 @@ def poly(seq):
     if seq.size == 0:
         return 1.0
 
-    return _fft_poly(cupy.column_stack((cupy.ones(seq.size, seq.dtype), -seq)))
+    from cupyx.scipy.signal import convolve
+    seq = cupy.column_stack((cupy.ones(seq.size, seq.dtype), -seq))
+    return _fft_poly(seq, convolve)
 
 
 cdef class poly1d:
