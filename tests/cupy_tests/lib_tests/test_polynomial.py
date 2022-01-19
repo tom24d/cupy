@@ -941,7 +941,7 @@ class TestPoly(unittest.TestCase):
         for xp in (numpy, cupy):
             a = testing.shaped_arange((), xp, dtype)
             with pytest.raises(TypeError):
-                numpy.poly(a)
+                xp.poly(a)
 
     @testing.for_all_dtypes()
     @testing.numpy_cupy_equal()
