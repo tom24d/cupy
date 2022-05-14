@@ -4,6 +4,8 @@ import cupy
 from cupy import _core
 from cupy.linalg import _decomposition
 from cupy.linalg import _util
+from cupy.linalg import _solve
+import cupyx
 
 import functools
 
@@ -157,7 +159,45 @@ def norm(x, ord=None, axis=None, keepdims=False):
         raise ValueError('Improper number of dimensions to norm.')
 
 
-# TODO(okuta): Implement cond
+def cond(x, p=None):
+    """Compute the condition number of a matrix.
+
+    Args:
+        x (cupy.ndarray): The matrix whose condition number is sought.
+        p (non-zero int, inf, -inf, 'fro'): Order of the norm used in the condition number computation.
+
+    Returns:
+        cupy.ndarray: The condition number of the matrix. May be infinite.
+
+    .. seealso:: :func:`numpy.linalg.cond`
+    """
+    if _util._is_empty_2d(x):
+        raise numpy.linalg.LinAlgError("cond is not defined on empty arrays")
+
+    if p is None or p == 2 or p == -2:
+        s = _decomposition.svd(x, compute_uv=False)
+        with cupyx.errstate(linalg='ignore'):
+            if p == -2:
+                r = s[..., -1] / s[..., 0]
+            else:
+                r = s[..., 0] / s[..., -1]
+    else:
+        _util._assert_stacked_2d(x)
+        _util._assert_stacked_square(x)
+        t, result_t = _util.linalg_common_type(x)
+        with cupyx.errstate(linalg='ignore'):
+            invx = _solve.inv(x.astype(t))
+            r = norm(x, p, axis=(-2, -1)) * norm(invx, p, axis=(-2, -1))
+        r = r.astype(result_t, copy=False)
+
+    r = cupy.asarray(r)
+    nan_mask = cupy.isnan(r)
+    if nan_mask.any():
+        nan_mask &= ~cupy.isnan(x).any(axis=(-2, -1))
+        if r.ndim > 0:
+            r[nan_mask] = cupy.inf
+
+    return r
 
 
 def det(a):

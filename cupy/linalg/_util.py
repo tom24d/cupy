@@ -106,6 +106,10 @@ def _common_type_internal(default_dtype, *dtypes):
     return numpy.result_type(*inexact_dtypes)
 
 
+def _is_empty_2d(arr):
+    return arr.size == 0 and numpy.product(arr.shape[-2:]) == 0
+
+
 def _check_cusolver_dev_info_if_synchronization_allowed(routine, dev_info):
     # `dev_info` contains integers, the status code of a cuSOLVER
     # routine call. It is referred to as "infoArray" or "devInfo" in the

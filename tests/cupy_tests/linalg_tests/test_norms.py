@@ -91,7 +91,8 @@ class TestMatrixRank(unittest.TestCase):
 
 
 @testing.parameterize(*testing.product({
-    'ord': [-numpy.Inf, -2, -1, 0, 1, 2, 3, numpy.Inf],
+    'shape': [(1, 1), (2, 2), (3, 3)],
+    'ord': [None, 'fro', -numpy.Inf, -2, -1, 1, 2, numpy.Inf],
 })
 )
 @testing.gpu
@@ -100,14 +101,15 @@ class TestCond(unittest.TestCase):
     @testing.for_float_dtypes(no_float16=True)
     @testing.numpy_cupy_allclose(rtol=1e-3, atol=1e-4)
     def test_cond(self, xp, dtype):
-        a = testing.shaped_arange((2, 2, xp, dtype)) + 1
+        a = testing.shaped_arange(self.shape, xp, dtype) + 1
         return xp.linalg.cond(a, self.ord)
 
     @testing.for_float_dtypes(no_float16=True)
-    @testing.numpy_cupy_allclose(rtol=1e-3, atol=1e-4)
-    def test_cond_empty_matrix(self, xp, dtype):
-        a = testing.shaped_arange((0, 0, xp, dtype))
-        return xp.linalg.cond(a, self.ord)
+    def test_cond_empty_matrix(self, dtype):
+        for xp in (numpy, cupy):
+            a = testing.shaped_arange((0, 0), xp, dtype)
+            with pytest.raises(numpy.linalg.LinAlgError):
+                xp.linalg.cond(a, self.ord)
 
 
 @testing.gpu
