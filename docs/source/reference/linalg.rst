@@ -51,6 +51,7 @@ Norms and other numbers
    :toctree: generated/
 
    linalg.norm
+   linalg.cond
    linalg.det
    linalg.matrix_rank
    linalg.slogdet
