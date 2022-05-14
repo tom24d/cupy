@@ -90,6 +90,26 @@ class TestMatrixRank(unittest.TestCase):
         return y
 
 
+@testing.parameterize(*testing.product({
+    'ord': [-numpy.Inf, -2, -1, 0, 1, 2, 3, numpy.Inf],
+})
+)
+@testing.gpu
+class TestCond(unittest.TestCase):
+
+    @testing.for_float_dtypes(no_float16=True)
+    @testing.numpy_cupy_allclose(rtol=1e-3, atol=1e-4)
+    def test_cond(self, xp, dtype):
+        a = testing.shaped_arange((2, 2, xp, dtype)) + 1
+        return xp.linalg.cond(a, self.ord)
+
+    @testing.for_float_dtypes(no_float16=True)
+    @testing.numpy_cupy_allclose(rtol=1e-3, atol=1e-4)
+    def test_cond_empty_matrix(self, xp, dtype):
+        a = testing.shaped_arange((0, 0, xp, dtype))
+        return xp.linalg.cond(a, self.ord)
+
+
 @testing.gpu
 class TestDet(unittest.TestCase):
 
