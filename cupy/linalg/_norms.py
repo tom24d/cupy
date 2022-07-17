@@ -1,3 +1,4 @@
+from cmath import nan
 import numpy
 
 import cupy
@@ -196,6 +197,8 @@ def cond(x, p=None):
         nan_mask &= ~cupy.isnan(x).any(axis=(-2, -1))
         if r.ndim > 0:
             r[nan_mask] = cupy.inf
+        elif nan_mask:
+            r[()] = cupy.inf
 
     return r
 
