@@ -91,7 +91,6 @@ class TestMatrixRank(unittest.TestCase):
 
 
 @testing.parameterize(*testing.product({
-    'shape': [(1, 1), (2, 2), (3, 3)],
     'ord': [None, 'fro', -numpy.Inf, -2, -1, 1, 2, numpy.Inf],
 })
 )
@@ -100,8 +99,14 @@ class TestCond(unittest.TestCase):
 
     @testing.for_float_dtypes(no_float16=True)
     @testing.numpy_cupy_allclose(rtol=1e-3, atol=1e-4)
-    def test_cond(self, xp, dtype):
-        a = testing.shaped_arange(self.shape, xp, dtype) + 1
+    def test_cond_nonsvd(self, xp, dtype):
+        a = xp.array([[1., 0, 1], [0, -2., 0], [0, 0, 3.]], dtype=dtype)
+        return xp.linalg.cond(a, self.ord)
+
+    @testing.for_float_dtypes(no_float16=True)
+    @testing.numpy_cupy_allclose(rtol=1e-3, atol=1e-4)
+    def test_cond_singular(self, xp, dtype):
+        a = xp.ones((2, 2), dtype=dtype)
         return xp.linalg.cond(a, self.ord)
 
     @testing.for_float_dtypes(no_float16=True)
